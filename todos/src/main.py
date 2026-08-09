@@ -25,9 +25,14 @@ todo_data = {
     },
 }
 
-# 전체 데이터 조회
+# 전체 데이터 조회, 쿼리 파라미터 추가
 @app.get("/todos")
-def get_todos_handler():
-    # 데이터의 값을 리스트에 담아서 리턴
-    return list(todo_data.values())
+# 쿼리 파라미터: str 또는 None
+def get_todos_handler(order: str | None = None):
+    ret = list(todo_data.values())
+    # 쿼리 파라미터 값이 "DESC"인 경우 결과 역정렬 후 리턴
+    if order and order == "DESC":
+        return ret[::-1]
+    # 아닌 경우, 바로 리턴
+    return ret
 
