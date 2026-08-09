@@ -36,3 +36,8 @@ def get_todos_handler(order: str | None = None):
     # 아닌 경우, 바로 리턴
     return ret
 
+#todos 아래에 {todo_id} path와 매핑
+@app.get("/todos/{todo_id}")
+# 입력 받은 {todo_id} 값으로 데이터 조회
+def get_todo_handler(todo_id: int):
+    return todo_data.get(todo_id, {})
