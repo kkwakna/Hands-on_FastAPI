@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -41,3 +42,18 @@ def get_todos_handler(order: str | None = None):
 # 입력 받은 {todo_id} 값으로 데이터 조회
 def get_todo_handler(todo_id: int):
     return todo_data.get(todo_id, {})
+
+# request body 검증을 위한 pydantic model 설계
+class CreateToDoRequest(BaseModel):
+    id: int
+    contents: str
+    is_done: bool
+
+# 데이터 생성
+@app.post("/todos")
+# request pydantic 검증 후 
+def create_todo_handler(request: CreateToDoRequest):
+    # 새로운 데이터로 추가
+    todo_data[request.id] = request.dict()
+    # 추가한 데이터 리턴
+    return todo_data[request.id]
