@@ -1,4 +1,4 @@
-from fastapi import Body, FastAPI
+from fastapi import Body, FastAPI, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -27,7 +27,7 @@ todo_data = {
 }
 
 # 전체 데이터 조회, 쿼리 파라미터 추가
-@app.get("/todos")
+@app.get("/todos", status_code=200)
 # 쿼리 파라미터: str 또는 None
 def get_todos_handler(order: str | None = None):
     ret = list(todo_data.values())
@@ -38,10 +38,13 @@ def get_todos_handler(order: str | None = None):
     return ret
 
 #todos 아래에 {todo_id} path와 매핑
-@app.get("/todos/{todo_id}")
+@app.get("/todos/{todo_id}", status_code=200)
 # 입력 받은 {todo_id} 값으로 데이터 조회
 def get_todo_handler(todo_id: int):
-    return todo_data.get(todo_id, {})
+    todo = todo_data.get(todo_id)
+    if todo:
+        return todo
+    raise HTTPException(status_code=404, detail="Todo Not Found")
 
 # request body 검증을 위한 pydantic model 설계
 class CreateToDoRequest(BaseModel):
@@ -50,7 +53,7 @@ class CreateToDoRequest(BaseModel):
     is_done: bool
 
 # 데이터 생성
-@app.post("/todos")
+@app.post("/todos", status_code=201)
 # request pydantic 검증 후 
 def create_todo_handler(request: CreateToDoRequest):
     # 새로운 데이터로 추가
@@ -59,7 +62,7 @@ def create_todo_handler(request: CreateToDoRequest):
     return todo_data[request.id]
 
 # {todo_id}에 해당하는 데이터 수정
-@app.patch("/todos/{todo_id}")
+@app.patch("/todos/{todo_id}", status_code=200)
 def update_todo_handler(
     todo_id: int,
     # request body 하나의 컬럼 값을 사용할 수 있음
@@ -72,11 +75,14 @@ def update_todo_handler(
         todo["is_done"] = is_done
         return todo
     # todo가 없다면
-    return {}
+    raise HTTPException(status_code=404, detail="ToDo Not Found")
 
 # 데이터 삭제
-@app.delete("/todos/{todo_id}")
+@app.delete("/todos/{todo_id}", status_code=204)
 def delete_todo_handler(todo_id: int):
     # {todo_id}에 해당하는 데이터 삭제, 키 에러 방지(None: default value)
-    todo_data.pop(todo_id, None)
-    return todo_data
+    todo = todo_data.pop(todo_id, None)
+    if todo:
+        return
+    else:
+        raise HTTPException(status_code=404, detail="ToDo Not Found")
