@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import Body, FastAPI
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -57,3 +57,19 @@ def create_todo_handler(request: CreateToDoRequest):
     todo_data[request.id] = request.dict()
     # 추가한 데이터 리턴
     return todo_data[request.id]
+
+# {todo_id}에 해당하는 데이터 수정
+@app.patch("/todos/{todo_id}")
+def update_todo_handler(
+    todo_id: int,
+    # request body 하나의 컬럼 값을 사용할 수 있음
+    is_done: bool = Body(..., embed=True)
+):
+    todo = todo_data.get(todo_id)
+    # todo가 있다면
+    if todo:
+        # request 값으로 수정
+        todo["is_done"] = is_done
+        return todo
+    # todo가 없다면
+    return {}
