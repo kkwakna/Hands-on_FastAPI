@@ -73,3 +73,10 @@ def update_todo_handler(
         return todo
     # todo가 없다면
     return {}
+
+# 데이터 삭제
+@app.delete("/todos/{todo_id}")
+def delete_todo_handler(todo_id: int):
+    # {todo_id}에 해당하는 데이터 삭제, 키 에러 방지(None: default value)
+    todo_data.pop(todo_id, None)
+    return todo_data
